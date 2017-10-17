@@ -2,6 +2,7 @@ package com.cisc181.core;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -46,10 +47,11 @@ public abstract class Person implements java.io.Serializable {
 		return DOB;
 	}
 
-	public void setDOB(Date DOB){
+	public void setDOB(Date DOB) throws PersonException {
+		if (getDiffYears(DOB, new Date()) > 100) {
+			throw new PersonException("DOB is more than 100 years", this);
+		}
 		this.DOB = DOB;
-		
-		
 	}
 
 	public void setAddress(String newAddress) {
@@ -60,9 +62,11 @@ public abstract class Person implements java.io.Serializable {
 		return address;
 	}
 
-	public void setPhone(String newPhone_number) {
+	public void setPhone(String newPhone_number) throws PersonException {
+		if (!isCorrectPhoneFormat(newPhone_number)) {
+			throw new PersonException("Phone_number format is incorrect", this);
+		}
 		phone_number = newPhone_number;
-	
 	}
 
 	public String getPhone() {
@@ -77,6 +81,32 @@ public abstract class Person implements java.io.Serializable {
 		return email_address;
 	}
 
+	public static int getDiffYears(Date first, Date last) {
+	    Calendar a = getCalendar(first);
+	    Calendar b = getCalendar(last);
+	    int diff = b.get(Calendar.YEAR) - a.get(Calendar.YEAR);
+	    if (a.get(Calendar.MONTH) > b.get(Calendar.MONTH) || 
+	        (a.get(Calendar.MONTH) == b.get(Calendar.MONTH) && a.get(Calendar.DATE) > b.get(Calendar.DATE))) {
+	        diff--;
+	    }
+	    return diff;
+	}
+
+	public static Calendar getCalendar(Date date) {
+	    Calendar cal = Calendar.getInstance(Locale.US);
+	    cal.setTime(date);
+	    return cal;
+	}
+	
+	public static boolean isCorrectPhoneFormat(String phone_number) {		
+		String regex = "\\(\\d{3}\\)-\\d{3}-\\d{4}"; 
+		Pattern pattern = Pattern.compile(regex);
+		Matcher matcher = pattern.matcher(phone_number);
+		return matcher.matches();
+	}
+	
+	
+	
 	/*
 	 * Constructors No Arg Constructor
 	 */
@@ -90,7 +120,16 @@ public abstract class Person implements java.io.Serializable {
 
 	public Person(String FirstName, String MiddleName, String LastName,
 			Date DOB, String Address, String Phone_number, String Email)
-	{
+	throws PersonException {
+		
+		if (getDiffYears(DOB, new Date()) > 100) {
+			throw new PersonException("DOB is more than 100 years", this);
+		}
+		
+		if (!isCorrectPhoneFormat(Phone_number)) {
+			throw new PersonException("Phone_number format is incorrect", this);
+		}
+		
 		this.FirstName = FirstName;
 		this.MiddleName = MiddleName;
 		this.LastName = LastName;

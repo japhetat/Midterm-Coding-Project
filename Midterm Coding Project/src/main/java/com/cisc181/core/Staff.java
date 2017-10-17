@@ -27,7 +27,7 @@ public class Staff extends Employee {
 			String officeHours, int rank, double salary, Date hireDate,
 			eTitle Title) 
 	
-	{
+	throws PersonException{
 		super(FirstName, MiddleName, LastName, DOB, Address, Phone_number,
 				Email, officeHours, salary, hireDate);
 		
