@@ -5,6 +5,8 @@ import static org.junit.Assert.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Random;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -15,6 +17,8 @@ import java.util.UUID;
 
 
 public class Student_Test {
+	
+	private static double sectionCreditHour = 3;
 	
 	private static SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy");
 	
@@ -29,9 +33,12 @@ public class Student_Test {
 	@BeforeClass
 	public static void setup() {
 		try {
-			Course course1 = new Course(UUID.randomUUID(), "Computer Science II", 95, eMajor.COMPSI);
-			Course course2 = new Course(UUID.randomUUID(), "Chemistry", 82, eMajor.CHEM);
-			Course course3 = new Course(UUID.randomUUID(), "Nursing", 92, eMajor.NURSING);
+			Course course1 = new Course(UUID.randomUUID(), 
+					"Computer Science II", 95, eMajor.COMPSI);
+			Course course2 = new Course(UUID.randomUUID(), 
+					"Chemistry", 82, eMajor.CHEM);
+			Course course3 = new Course(UUID.randomUUID(), 
+					"Nursing", 92, eMajor.NURSING);
 			courseList.add(course1);
 			courseList.add(course2);
 			courseList.add(course3);
@@ -102,20 +109,82 @@ public class Student_Test {
 					
 		}
 		catch (Exception e) {
-			
+			fail("unexpected exception");
 		}
 		
 	}
 
-	@Test
-	public void test() {
-		ArrayList<Enrollment> enrollments = new ArrayList<Enrollment>();
-		for (int i = 0; i < studentList.size(); i++) {
-			for (int j = 0; j < sectionList.size(); j++) {
-				Enrollment enrollment = new Enrollment(studentList.get(i).getStudentID(), sectionList.get(j).getSectionID());
-				// enrollment.setGrade();
-				enrollments.add(enrollment);
+	private static double getStudentGPA(ArrayList<Enrollment> enrollments, Student student) {
+		double studentGradeTotal = 0.0;
+		for (int i = 0; i < enrollments.size(); i++) {
+			Enrollment enrollment = enrollments.get(i);
+			if (enrollment.getStudentID().equals(student.getStudentID())) {
+				studentGradeTotal = studentGradeTotal + enrollment.getGrade();
 			}
+		}
+		double studentGPA = (studentGradeTotal * sectionCreditHour) / (sectionList.size() * sectionCreditHour);
+		return studentGPA;		
+	}
+	
+	private static double getAverageCourseGrade(ArrayList<Enrollment> enrollments, Section section) {
+		double sectionGradeTotals = 0.0;
+		for (int i = 0; i < enrollments.size(); i++) {
+			Enrollment enrollment = enrollments.get(i);
+			if (enrollment.getSectionID().equals(section.getSectionID())) {
+				sectionGradeTotals = sectionGradeTotals + enrollment.getGrade();
+			}
+		}
+		double averageSectionGrade = sectionGradeTotals / studentList.size();
+		return averageSectionGrade;
+	}
+	
+	@Test
+	public void testGrades() {
+				
+		ArrayList<Enrollment> enrollments = new ArrayList<Enrollment>();
+		HashMap<UUID, Double> studentGPAs = new HashMap<UUID, Double>();
+		HashMap<UUID, Double> sectionGradeTotals = new HashMap<UUID, Double>();
+		
+		Random rand = new Random();
+		
+		for (int i = 0; i < studentList.size(); i++) {
+			
+			Student student = studentList.get(i);
+			double studentGradeTotal = 0.0;			
+			for (int j = 0; j < sectionList.size(); j++) {
+				Section section = sectionList.get(j);				
+				Enrollment enrollment = new Enrollment(section.getSectionID(), student.getStudentID());
+				double grade = rand.nextInt(5); // 4 = A, 3 = B, 2 = C, 1 = D, 0 = F
+				studentGradeTotal = studentGradeTotal + grade;
+				enrollment.setGrade(grade);
+				enrollments.add(enrollment);
+				
+				if (i == 0) {
+					sectionGradeTotals.put(section.getSectionID(), grade);
+				}
+				else {
+					double currentGradeTotal = sectionGradeTotals.get(section.getSectionID());
+					sectionGradeTotals.put(section.getSectionID(), (currentGradeTotal + grade));
+				}
+			}
+			
+			double studentGPA = (studentGradeTotal * sectionCreditHour) / (sectionList.size() * sectionCreditHour);
+			studentGPAs.put(student.getStudentID(), studentGPA);			
+		}
+		
+		for (int i = 0; i < studentList.size(); i++) {
+			Student student = studentList.get(i);
+			double studentGPA = getStudentGPA(enrollments, student);
+			System.out.println("studentGPA: "+studentGPA);
+			assertEquals(studentGPAs.get(student.getStudentID()), studentGPA, 0.0);
+		}
+		
+		for (int i = 0; i < sectionList.size(); i++) {
+			Section section = sectionList.get(i);
+			double averageCourseGrade = getAverageCourseGrade(enrollments, section);
+			double expectedAverageCourseGrade = sectionGradeTotals.get(section.getSectionID()) / studentList.size();
+			System.out.println("averageCourseGrade: "+averageCourseGrade);
+			assertEquals(expectedAverageCourseGrade, averageCourseGrade, 0.0);
 		}
 	}
 }
