@@ -33,12 +33,9 @@ public class Student_Test {
 	@BeforeClass
 	public static void setup() {
 		try {
-			Course course1 = new Course(UUID.randomUUID(), 
-					"Computer Science II", 95, eMajor.COMPSI);
-			Course course2 = new Course(UUID.randomUUID(), 
-					"Chemistry", 82, eMajor.CHEM);
-			Course course3 = new Course(UUID.randomUUID(), 
-					"Nursing", 92, eMajor.NURSING);
+			Course course1 = new Course(UUID.randomUUID(), "Computer Science II", 95, eMajor.COMPSI);
+			Course course2 = new Course(UUID.randomUUID(), "Chemistry", 82, eMajor.CHEM);
+			Course course3 = new Course(UUID.randomUUID(), "Nursing", 92, eMajor.NURSING);
 			courseList.add(course1);
 			courseList.add(course2);
 			courseList.add(course3);
@@ -175,7 +172,7 @@ public class Student_Test {
 		for (int i = 0; i < studentList.size(); i++) {
 			Student student = studentList.get(i);
 			double studentGPA = getStudentGPA(enrollments, student);
-			System.out.println("studentGPA: "+studentGPA);
+			// System.out.println("studentGPA: "+studentGPA);
 			assertEquals(studentGPAs.get(student.getStudentID()), studentGPA, 0.0);
 		}
 		
@@ -183,7 +180,7 @@ public class Student_Test {
 			Section section = sectionList.get(i);
 			double averageCourseGrade = getAverageCourseGrade(enrollments, section);
 			double expectedAverageCourseGrade = sectionGradeTotals.get(section.getSectionID()) / studentList.size();
-			System.out.println("averageCourseGrade: "+averageCourseGrade);
+			// System.out.println("averageCourseGrade: "+averageCourseGrade);
 			assertEquals(expectedAverageCourseGrade, averageCourseGrade, 0.0);
 		}
 	}
